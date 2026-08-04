@@ -1,0 +1,376 @@
+"use client";
+
+import { GeoMapView } from "./geo-map-view";
+import { useState } from "react";
+import { useSession, useTeam, useUpdateTeamMember, useOrganization } from "@/lib/api";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
+import { cn, formatDateTime } from "@/lib/utils";
+import {
+  ShieldCheck, Users, Building2, KeyRound, Lock, Plus, Pencil,
+  Trash2, Copy, Check, Phone, Mail, User
+} from "lucide-react";
+
+const roleColors: Record<string, string> = {
+  admin: "text-destructive bg-destructive/10 border-destructive/30",
+  investigator: "text-primary bg-primary/10 border-primary/30",
+  reviewer: "text-amber-400 bg-amber-500/10 border-amber-500/30",
+  viewer: "text-[#64748b] bg-[#1e293b]/60 border-border",
+};
+
+export function AdminView() {
+  const { data: session } = useSession();
+  const { data: team, isLoading, refetch } = useTeam(session?.organization?.id ?? null);
+  const update = useUpdateTeamMember();
+  const { data: org } = useOrganization();
+
+  const [editUser, setEditUser] = useState<any>(null);
+  const [addOpen, setAddOpen] = useState(false);
+  const [inviteResult, setInviteResult] = useState<any>(null);
+  const [copied, setCopied] = useState(false);
+
+  // Add member form state
+  const [newName, setNewName] = useState("");
+  const [newEmail, setNewEmail] = useState("");
+  const [newPhone, setNewPhone] = useState("");
+  const [newRole, setNewRole] = useState("investigator");
+  const [generating, setGenerating] = useState(false);
+
+  const user = session?.user;
+  const isAdmin = user?.role === "admin";
+
+  if (!isAdmin) {
+    return (
+      <div className="p-6 max-w-[800px] mx-auto">
+        <Card className="border-[#1e293b]">
+          <CardContent className="py-12 text-center">
+            <Lock className="h-8 w-8 text-[#64748b] mx-auto mb-3" />
+            <div className="text-sm font-medium text-[#f1f5f9]">Admin access required</div>
+            <div className="text-xs text-[#64748b] mt-1">
+              You need an admin role to view this page.
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const handleGenerateInvite = async () => {
+    if (!newName || !newEmail) {
+      toast.error("Name and email are required");
+      return;
+    }
+    setGenerating(true);
+    try {
+      const res = await fetch("/api/invite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newName, email: newEmail, phone: newPhone, role: newRole }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error || "Failed to generate invite");
+      } else {
+        setInviteResult(data);
+        toast.success("Invitation link generated");
+        setNewName("");
+        setNewEmail("");
+        setNewPhone("");
+        setNewRole("investigator");
+        refetch();
+      }
+    } catch {
+      toast.error("Network error");
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const copyLink = (link: string) => {
+    navigator.clipboard.writeText(link);
+    setCopied(true);
+    toast.success("Link copied to clipboard");
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to remove this member?")) return;
+    try {
+      const res = await fetch(`/api/team/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        toast.success("Member removed");
+        refetch();
+      } else {
+        toast.error("Failed to remove member");
+      }
+    } catch {
+      toast.error("Network error");
+    }
+  };
+
+  const maxUsers = org?.licenseType === "enterprise" ? 50 : org?.licenseType === "professional" ? 15 : 5;
+
+  return (
+    <div className="p-4 sm:p-6 space-y-4 max-w-[1200px] mx-auto">
+      <div className="rounded-[24px] border border-slate-800/80 bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 p-4 shadow-[0_20px_60px_rgba(2,6,23,0.35)] sm:p-5">
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full border border-slate-700/80 bg-slate-900/70 px-3 py-1 text-[10px] uppercase tracking-[0.3em] text-slate-400">
+              <ShieldCheck className="h-3.5 w-3.5 text-sky-400" />
+              Geo command center
+            </div>
+            <h1 className="mt-3 text-2xl font-bold text-[#f1f5f9] tracking-tight">Admin Panel</h1>
+            <p className="mt-1 text-sm text-[#64748b]">
+              Manage your organization and team members from the redesigned control surface.
+            </p>
+          </div>
+          <Button onClick={() => { setAddOpen(true); setInviteResult(null); }} className="cursor-pointer bg-sky-500 text-slate-950 hover:bg-sky-400">
+            <Plus className="mr-2 h-4 w-4" /> Add Member
+          </Button>
+        </div>
+      </div>
+
+      <GeoMapView />
+
+      {/* Organization card */}{/* Organization card */}
+      <Card className="border-[#1e293b]">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Building2 className="h-4 w-4 text-primary" /> Organization
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid sm:grid-cols-3 gap-4">
+            <Stat label="Organization" value={org?.name ?? "—"} icon={<Building2 className="h-3 w-3" />} />
+            <Stat label="License Type" value={<span className="uppercase">{org?.licenseType ?? "—"}</span>} icon={<KeyRound className="h-3 w-3" />} />
+            <Stat label="Members" value={`${team?.length ?? 0} / ${maxUsers}`} icon={<Users className="h-3 w-3" />} />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Team management */}
+      <Card className="border-[#1e293b]">
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Users className="h-4 w-4 text-accent" /> Team Members
+            </CardTitle>
+            <Badge variant="outline" className="text-[10px]">{team?.length ?? 0} members</Badge>
+          </div>
+          <CardDescription>Manage roles and access for your team.</CardDescription>
+        </CardHeader>
+        <CardContent className="p-0">
+          <ScrollArea className="h-[400px]">
+            <div className="divide-y divide-[#1e293b]">
+              {isLoading ? (
+                <div className="p-6 text-center text-sm text-[#64748b]">Loading…</div>
+              ) : !team?.length ? (
+                <div className="p-6 text-center text-sm text-[#64748b]">No team members yet.</div>
+              ) : (
+                team.map((member: any) => (
+                  <div key={member.id} className="flex items-center gap-3 px-4 py-3 hover:bg-[#1e293b]/40 transition-colors">
+                    <Avatar className="h-9 w-9">
+                      <AvatarFallback className="text-xs bg-primary/10 text-primary">
+                        {(member.name || member.email || "?").slice(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm font-medium text-[#f1f5f9] truncate">{member.name || member.email}</div>
+                      <div className="text-xs text-[#64748b] truncate">{member.email}</div>
+                      {member.phone && (
+                        <div className="text-[10px] text-[#64748b] flex items-center gap-1">
+                          <Phone className="h-2.5 w-2.5" /> {member.phone}
+                        </div>
+                      )}
+                    </div>
+                    <Badge variant="outline" className={cn("text-[10px] capitalize", roleColors[member.role] || "")}>
+                      {member.role}
+                    </Badge>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 cursor-pointer"
+                        onClick={() => setEditUser(member)}
+                      >
+                        <Pencil className="h-3 w-3" />
+                      </Button>
+                      {member.id !== user?.id && (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-destructive cursor-pointer"
+                          onClick={() => handleDelete(member.id)}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </ScrollArea>
+        </CardContent>
+      </Card>
+
+      {/* Edit Dialog */}
+      {editUser && (
+        <Dialog open onOpenChange={(v) => !v && setEditUser(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Edit Member</DialogTitle>
+              <DialogDescription>Update member details and role.</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3 py-2">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Name</Label>
+                <Input value={editUser.name || ""} onChange={(e) => setEditUser({ ...editUser, name: e.target.value })} />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Phone</Label>
+                <Input value={editUser.phone || ""} onChange={(e) => setEditUser({ ...editUser, phone: e.target.value })} />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Role</Label>
+                <Select value={editUser.role} onValueChange={(v) => setEditUser({ ...editUser, role: v })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="admin">Admin</SelectItem>
+                    <SelectItem value="investigator">Investigator</SelectItem>
+                    <SelectItem value="reviewer">Reviewer</SelectItem>
+                    <SelectItem value="viewer">Viewer</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="ghost" onClick={() => setEditUser(null)} className="cursor-pointer">Cancel</Button>
+              <Button
+                onClick={async () => {
+                  try {
+                    await update.mutateAsync({ id: editUser.id, name: editUser.name, phone: editUser.phone, role: editUser.role });
+                    toast.success("Updated");
+                    setEditUser(null);
+                    refetch();
+                  } catch (e) {
+                    toast.error((e as Error).message);
+                  }
+                }}
+                className="cursor-pointer"
+              >
+                Save
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Add Member Dialog */}
+      <Dialog open={addOpen} onOpenChange={setAddOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add New Member</DialogTitle>
+            <DialogDescription>
+              Enter member details to generate an invitation link.
+            </DialogDescription>
+          </DialogHeader>
+
+          {!inviteResult ? (
+            <div className="space-y-4 py-2">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Full Name *</Label>
+                <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="John Doe" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Email *</Label>
+                <Input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="john@company.com" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Phone Number</Label>
+                <Input value={newPhone} onChange={(e) => setNewPhone(e.target.value)} placeholder="+1 234 567 8900" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs">Role</Label>
+                <Select value={newRole} onValueChange={setNewRole}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="investigator">Investigator</SelectItem>
+                    <SelectItem value="reviewer">Reviewer</SelectItem>
+                    <SelectItem value="viewer">Viewer</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4 py-2">
+              <div className="rounded-lg bg-green-500/10 border border-green-500/20 p-4 text-center">
+                <Check className="h-8 w-8 text-green-500 mx-auto mb-2" />
+                <div className="text-sm font-medium text-[#f1f5f9] text-green-500">Invitation Ready</div>
+                <div className="text-xs text-[#64748b] mt-1">
+                  Share this link with {inviteResult.invitee.name}
+                </div>
+              </div>
+              <div className="rounded-md bg-[#1e293b]/60 p-3">
+                <div className="text-[10px] font-mono uppercase tracking-wider text-[#64748b] mb-1">
+                  Invitation Link
+                </div>
+                <div className="text-xs font-mono break-all">{inviteResult.link}</div>
+              </div>
+              <div className="rounded-md bg-[#1e293b]/60 p-3">
+                <div className="text-[10px] font-mono uppercase tracking-wider text-[#64748b] mb-1">
+                  Encoded Token
+                </div>
+                <div className="text-[10px] font-mono break-all text-[#64748b]">{inviteResult.token}</div>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            {!inviteResult ? (
+              <>
+                <Button variant="ghost" onClick={() => setAddOpen(false)} className="cursor-pointer">Cancel</Button>
+                <Button onClick={handleGenerateInvite} disabled={generating} className="cursor-pointer">
+                  {generating ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                  Generate Link
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="ghost" onClick={() => { setInviteResult(null); setAddOpen(false); }} className="cursor-pointer">Close</Button>
+                <Button onClick={() => copyLink(`${window.location.origin}${inviteResult.link}`)} className="cursor-pointer">
+                  {copied ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
+                  {copied ? "Copied" : "Copy Link"}
+                </Button>
+              </>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+function Stat({ label, value, icon }: { label: string; value: React.ReactNode; icon: React.ReactNode }) {
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-[#64748b]">
+        {icon}
+        {label}
+      </div>
+      <div className="text-sm font-semibold">{value}</div>
+    </div>
+  );
+}

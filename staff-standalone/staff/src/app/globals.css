@@ -1,0 +1,361 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-teal: var(--teal);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+/* Navy / slate / black geo command theme */
+:root {
+  --radius: 0.7rem;
+  --background: #04070d;
+  --foreground: #f8fafc;
+  --card: #0f172a;
+  --card-foreground: #f8fafc;
+  --popover: #101828;
+  --popover-foreground: #f8fafc;
+  --primary: #60a5fa;
+  --primary-foreground: #020617;
+  --secondary: #111827;
+  --secondary-foreground: #f8fafc;
+  --muted: #172033;
+  --muted-foreground: #94a3b8;
+  --accent: #94a3b8;
+  --accent-foreground: #020617;
+  --teal: #2dd4bf;
+  --destructive: #fb7185;
+  --border: rgba(148, 163, 184, 0.18);
+  --input: #0f172a;
+  --ring: #60a5fa;
+  --chart-1: #60a5fa;
+  --chart-2: #94a3b8;
+  --chart-3: #2dd4bf;
+  --chart-4: #fb7185;
+  --chart-5: #a78bfa;
+  --sidebar: #090d16;
+  --sidebar-foreground: #f8fafc;
+  --sidebar-primary: #60a5fa;
+  --sidebar-primary-foreground: #020617;
+  --sidebar-accent: #111827;
+  --sidebar-accent-foreground: #f8fafc;
+  --sidebar-border: rgba(148, 163, 184, 0.18);
+  --sidebar-ring: #60a5fa;
+}
+
+.dark {
+  --background: #04070d;
+  --foreground: #f8fafc;
+  --card: #0f172a;
+  --card-foreground: #f8fafc;
+  --popover: #101828;
+  --popover-foreground: #f8fafc;
+  --primary: #60a5fa;
+  --primary-foreground: #020617;
+  --secondary: #111827;
+  --secondary-foreground: #f8fafc;
+  --muted: #172033;
+  --muted-foreground: #94a3b8;
+  --accent: #94a3b8;
+  --accent-foreground: #020617;
+  --teal: #2dd4bf;
+  --destructive: #fb7185;
+  --border: rgba(148, 163, 184, 0.18);
+  --input: #0f172a;
+  --ring: #60a5fa;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html, body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+  /* Custom scrollbar — forensic terminal aesthetic */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: oklch(0.18 0.025 250);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: oklch(0.35 0.03 250);
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: oklch(0.45 0.04 250);
+  }
+}
+
+/* Mono utility for forensic labels */
+.font-mono-forensic {
+  font-family: var(--font-mono);
+  letter-spacing: -0.01em;
+}
+
+/* Grid pattern background — wildlife trail / geo mapping look */
+.bg-grid-pattern {
+  background-image:
+    linear-gradient(to right, oklch(0.30 0.025 235 / 24%) 1px, transparent 1px),
+    linear-gradient(to bottom, oklch(0.30 0.025 235 / 24%) 1px, transparent 1px),
+    radial-gradient(circle at top left, oklch(0.64 0.16 155 / 12%), transparent 40%);
+  background-size: 32px 32px, 32px 32px, auto;
+}
+
+/* Shimmer effect for scan progress */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    oklch(0.72 0.15 195 / 30%),
+    transparent
+  );
+  animation: shimmer 2s infinite;
+}
+
+/* Pulse ring for active scan stages */
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 oklch(0.72 0.15 195 / 60%);
+  }
+  100% {
+    box-shadow: 0 0 0 12px oklch(0.72 0.15 195 / 0%);
+  }
+}
+.pulse-ring {
+  animation: pulse-ring 1.5s infinite;
+}
+
+/* Subtle scan line for terminal log */
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+.terminal-scanline {
+  position: relative;
+  overflow: hidden;
+}
+.terminal-scanline::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    oklch(0.72 0.15 195 / 8%),
+    transparent
+  );
+  height: 100%;
+  animation: scanline 3s linear infinite;
+  pointer-events: none;
+}
+
+/* Dashboard Geography Dark Theme */
+:root {
+  --geo-bg-deep: #0a0e17;
+  --geo-bg-surface: #111827;
+  --geo-bg-card: #1a2234;
+  --geo-bg-elevated: #1e293b;
+  --geo-border: rgba(148, 163, 184, 0.1);
+  --geo-border-hover: rgba(148, 163, 184, 0.2);
+  --geo-text-primary: #f1f5f9;
+  --geo-text-secondary: #94a3b8;
+  --geo-text-muted: #64748b;
+  --geo-accent-teal: #14b8a6;
+  --geo-accent-cyan: #06b6d4;
+  --geo-accent-green: #10b981;
+  --geo-accent-blue: #3b82f6;
+  --geo-accent-amber: #f59e0b;
+  --geo-accent-rose: #f43f5e;
+  --geo-grid: rgba(100, 255, 183, 0.03);
+}
+
+body {
+  background:
+    radial-gradient(circle at top left, rgba(96, 165, 250, 0.16), transparent 28%),
+    linear-gradient(135deg, #030712 0%, #0f172a 45%, #020617 100%);
+  color: var(--geo-text-primary);
+  min-height: 100vh;
+}
+
+/* Map grid background */
+.geo-grid-bg {
+  background-image: 
+    linear-gradient(var(--geo-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--geo-grid) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+
+/* Card styling */
+.geo-card {
+  background: var(--geo-bg-card);
+  border: 1px solid var(--geo-border);
+  border-radius: 12px;
+  backdrop-filter: blur(12px);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.geo-card:hover {
+  border-color: var(--geo-border-hover);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+}
+
+/* Accent glows */
+.geo-glow-teal {
+  box-shadow: 0 0 20px rgba(20, 184, 166, 0.15);
+}
+
+.geo-glow-cyan {
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.15);
+}
+
+/* Status indicators */
+.geo-status-live {
+  position: relative;
+}
+
+.geo-status-live::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  background: var(--geo-accent-green);
+  opacity: 0.3;
+  animation: geo-pulse 2s ease-in-out infinite;
+}
+
+@keyframes geo-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.3; }
+  50% { transform: scale(1.5); opacity: 0; }
+}
+
+/* Radar sweep */
+.geo-radar-sweep {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.geo-radar-sweep::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 50%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(20, 184, 166, 0.4), transparent);
+  transform-origin: left center;
+  animation: geo-radar-rotate 4s linear infinite;
+}
+
+@keyframes geo-radar-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* World map dots */
+.geo-map-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--geo-accent-teal);
+  box-shadow: 0 0 8px var(--geo-accent-teal), 0 0 16px rgba(20, 184, 166, 0.3);
+}
+
+.geo-map-dot.active {
+  background: var(--geo-accent-green);
+  box-shadow: 0 0 8px var(--geo-accent-green), 0 0 20px rgba(16, 185, 129, 0.4);
+  animation: geo-dot-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes geo-dot-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.8; }
+}
+
+/* Connection lines */
+.geo-connection-line {
+  stroke: rgba(20, 184, 166, 0.15);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+}
+
+/* Typography */
+.geo-mono {
+  font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--geo-bg-deep);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--geo-bg-elevated);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--geo-text-muted);
+}

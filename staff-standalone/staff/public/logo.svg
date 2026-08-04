@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" rx="128" fill="#07111B"/>
+  <path d="M256 76C176.5 76 112 140.5 112 220C112 299.5 176.5 364 256 364C335.5 364 400 299.5 400 220C400 140.5 335.5 76 256 76Z" fill="url(#paint0_linear)"/>
+  <path d="M256 112C194 112 144 162 144 224C144 286 194 336 256 336C318 336 368 286 368 224C368 162 318 112 256 112Z" fill="#0E1B2A"/>
+  <path d="M256 154C224 154 198 180 198 212C198 244 224 270 256 270C288 270 314 244 314 212C314 180 288 154 256 154Z" fill="#6EE7B7"/>
+  <path d="M222 144L164 214L226 222L258 246L316 182L252 174L222 144Z" fill="#FFD166"/>
+  <path d="M214 268C232 252 248 248 270 246C292 244 310 256 322 270" stroke="#6EE7B7" stroke-width="18" stroke-linecap="round"/>
+  <path d="M204 294C224 278 242 272 260 272C278 272 296 278 316 294" stroke="#8BD3FF" stroke-width="14" stroke-linecap="round"/>
+  <path d="M204 320C220 306 236 300 256 300C276 300 292 306 308 320" stroke="#93C5FD" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="256" cy="220" r="30" fill="#07111B" stroke="#F8FAFC" stroke-width="10"/>
+  <path d="M256 150L278 198H234L256 150Z" fill="#F8FAFC"/>
+  <path d="M228 228L256 278L284 228" stroke="#F8FAFC" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  <defs>
+    <linearGradient id="paint0_linear" x1="112" y1="76" x2="400" y2="364" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1D4ED8"/>
+      <stop offset="1" stop-color="#0F766E"/>
+    </linearGradient>
+  </defs>
+</svg>
